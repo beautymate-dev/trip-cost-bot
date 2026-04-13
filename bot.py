@@ -33,9 +33,12 @@ async def lookup_fuel_efficiency(year, make, model):
             f"{year} {make} {model}? Reply with just a single number, no units or explanation."
         )
         response = gemini_model.generate_content(prompt)
-        value = float(response.text.strip())
+        raw = response.text.strip()
+        logging.info(f"Gemini raw response for {year} {make} {model}: '{raw}'")
+        value = float(raw)
         return value
-    except Exception:
+    except Exception as e:
+        logging.error(f"Gemini lookup failed for {year} {make} {model}: {e}")
         return None
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
