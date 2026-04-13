@@ -1,6 +1,6 @@
 import logging
 import os
-import google.generativeai as genai
+from google import genai
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -23,8 +23,7 @@ logging.basicConfig(
 )
 
 # Configure Gemini
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 async def lookup_fuel_efficiency(year, make, model):
     try:
@@ -32,7 +31,10 @@ async def lookup_fuel_efficiency(year, make, model):
             f"What is the estimated average fuel consumption in L/100km for a "
             f"{year} {make} {model}? Reply with just a single number, no units or explanation."
         )
-        response = gemini_model.generate_content(prompt)
+        response = gemini_client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
         raw = response.text.strip()
         logging.info(f"Gemini raw response for {year} {make} {model}: '{raw}'")
         value = float(raw)
