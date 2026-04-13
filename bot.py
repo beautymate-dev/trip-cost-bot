@@ -32,7 +32,7 @@ async def lookup_fuel_efficiency(year, make, model):
             f"{year} {make} {model}? Reply with just a single number, no units or explanation."
         )
         response = gemini_client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.0-flash-lite",
             contents=prompt
         )
         raw = response.text.strip()
