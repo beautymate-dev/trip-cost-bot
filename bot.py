@@ -1,6 +1,6 @@
 import logging
 import os
-from google import genai
+import anthropic
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -22,8 +22,8 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 
-# Configure Gemini
-gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+# Configure Anthropic
+anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 async def lookup_fuel_efficiency(year, make, model):
     try:
@@ -31,16 +31,17 @@ async def lookup_fuel_efficiency(year, make, model):
             f"What is the estimated average fuel consumption in L/100km for a "
             f"{year} {make} {model}? Reply with just a single number, no units or explanation."
         )
-        response = gemini_client.models.generate_content(
-            model="gemini-2.0-flash-lite",
-            contents=prompt
+        response = anthropic_client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=16,
+            messages=[{"role": "user", "content": prompt}]
         )
-        raw = response.text.strip()
-        logging.info(f"Gemini raw response for {year} {make} {model}: '{raw}'")
+        raw = response.content[0].text.strip()
+        logging.info(f"Claude raw response for {year} {make} {model}: '{raw}'")
         value = float(raw)
         return value
     except Exception as e:
-        logging.error(f"Gemini lookup failed for {year} {make} {model}: {e}")
+        logging.error(f"Claude lookup failed for {year} {make} {model}: {e}")
         return None
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
